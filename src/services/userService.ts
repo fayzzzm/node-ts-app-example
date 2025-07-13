@@ -10,12 +10,16 @@ export const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters')
 });
 
+export type RegisterInput = z.infer<typeof registerSchema>;
+
 export const loginSchema = z.object({
   email: z.string().email('Invalid email format').trim(),
   password: z.string()
 });
 
-export async function registerUser(data: z.infer<typeof registerSchema>) {
+export type LoginInput = z.infer<typeof loginSchema>;
+
+export async function registerUser(data: RegisterInput) {
   const existingUser = await User.findOne({
     $or: [
       { email: data.email },
@@ -43,7 +47,7 @@ export async function registerUser(data: z.infer<typeof registerSchema>) {
   };
 }
 
-export async function loginUser(data: z.infer<typeof loginSchema>) {
+export async function loginUser(data: LoginInput) {
   const user = await User.findOne({ email: data.email }) as import('../types').UserDocument | null;
   if (!user) {
     throw new AppError('Invalid credentials', 401);

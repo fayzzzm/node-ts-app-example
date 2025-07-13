@@ -1,12 +1,14 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import connectDB from './config/database';
 import errorHandler from './middleware/errorHandler';
 import userRoutes from './routes/userRoutes';
 import AppError from './utils/AppError';
 import { cacheMiddleware } from './services/redisService';
+import redis from './services/redisService';
+import mongoose from 'mongoose';
 
 // Load environment variables
 dotenv.config();
@@ -19,7 +21,13 @@ connectDB();
 
 // Middleware
 app.use(cors());
+app.use(compression());
 app.use(express.json());
+
+// Health check endpoint
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 // Routes with caching
 app.use('/api/users', cacheMiddleware(1), userRoutes); // Cache for 1 second
@@ -48,6 +56,20 @@ process.on('uncaughtException', (err: Error) => {
 
 const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-}); 
+});
+
+// Graceful shutdown
+const shutdown = async () => {
+  console.log('Shutting down gracefully...');
+  await mongoose.connection.close();
+  await redis.quit();
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown); 
