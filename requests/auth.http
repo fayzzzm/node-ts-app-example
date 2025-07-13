@@ -1,0 +1,41 @@
+@baseUrl = http://localhost:3001/api
+@contentType = application/json
+
+### Register a new user
+POST {{baseUrl}}/users/register
+Content-Type: {{contentType}}
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+### Login user
+POST {{baseUrl}}/users/login
+Content-Type: {{contentType}}
+
+{
+    "email": "test@example.com",
+    "password": "password123"
+}
+
+### Get current user profile
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+Content-Type: {{contentType}}
+
+### Environment variables for different environments
+# @name envs
+
+### Local Docker environment
+@baseUrl = http://localhost:3001/api
+@authToken = your_jwt_token_here
+
+### Production environment
+# @baseUrl = https://your-production-url/api
+# @authToken = your_production_token_here
+
+### Development environment
+# @baseUrl = http://localhost:3000/api
+# @authToken = your_dev_token_here 
