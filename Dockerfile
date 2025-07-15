@@ -19,5 +19,9 @@ RUN npm run build
 # Expose port
 EXPOSE 3001
 
+# Copy wait-for-it script
+COPY wait-for-it.sh ./
+RUN chmod +x wait-for-it.sh
+
 # Start the application
-CMD ["node", "dist/app.js"] 
+CMD ["./wait-for-it.sh", "kafka:9092", "--", "node", "dist/app.js"] 

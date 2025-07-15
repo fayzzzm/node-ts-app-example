@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { clearCache } from './redisService';
 import AppError from '../utils/AppError';
+import { sendUserEvent } from './kafkaService';
 
 export const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').trim(),
@@ -31,6 +32,11 @@ export async function registerUser(data: RegisterInput) {
   }
   const user = await User.create(data);
   await clearCache('users');
+  // Send Kafka event for registration
+  await sendUserEvent('user.registered', {
+    userId: user._id,
+    timestamp: new Date().toISOString(),
+  });
   const token = jwt.sign(
     { userId: user._id },
     process.env.JWT_SECRET || 'your_jwt_secret_key',
@@ -61,6 +67,11 @@ export async function loginUser(data: LoginInput) {
     process.env.JWT_SECRET || 'your_jwt_secret_key',
     { expiresIn: '24h' }
   );
+  // Send Kafka event for login
+  await sendUserEvent('user.logged_in', {
+    userId: user._id,
+    timestamp: new Date().toISOString(),
+  });
   return {
     message: 'Login successful',
     token,

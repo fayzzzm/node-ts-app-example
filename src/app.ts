@@ -9,6 +9,7 @@ import AppError from './utils/AppError';
 import { cacheMiddleware } from './services/redisService';
 import redis from './services/redisService';
 import mongoose from 'mongoose';
+import { startUserEventConsumer } from './services/kafkaService';
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +19,11 @@ const app: Application = express();
 
 // Connect to database
 connectDB();
+
+// Start Kafka consumer for analytics events
+startUserEventConsumer().catch((err) => {
+  console.error('Failed to start Kafka consumer:', err);
+});
 
 // Middleware
 app.use(cors());

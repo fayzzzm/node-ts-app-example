@@ -1,6 +1,4 @@
-import { CustomError } from '../types/error';
-
-class AppError extends Error implements CustomError {
+class AppError extends Error {
   statusCode: number;
   status: string;
   isOperational: boolean;
