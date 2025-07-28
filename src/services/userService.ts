@@ -27,21 +27,27 @@ export async function registerUser(data: RegisterInput) {
       { username: data.username }
     ]
   });
+  
   if (existingUser) {
     throw new AppError(existingUser.email === data.email ? 'Email already registered' : 'Username already taken', 409);
   }
+
   const user = await User.create(data);
+
   await clearCache('users');
+  
   // Send Kafka event for registration
   await sendUserEvent('user.registered', {
     userId: user._id,
     timestamp: new Date().toISOString(),
   });
+
   const token = jwt.sign(
     { userId: user._id },
     process.env.JWT_SECRET || 'your_jwt_secret_key',
     { expiresIn: '24h' }
   );
+  
   return {
     message: 'User registered successfully',
     token,

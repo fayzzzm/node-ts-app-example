@@ -16,7 +16,7 @@ services:
       - KAFKA_BROKER=kafka:9092
     volumes:
       - .:/usr/src/app
-    command: ./wait-for-it.sh kafka:9092 -- node dist/app.js
+    command: ./wait-for-it.sh kafka:9092 -- npm run dev
     depends_on:
       - mongo
       - redis

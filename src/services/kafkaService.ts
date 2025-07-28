@@ -11,6 +11,8 @@ export const producer = kafka.producer();
 export const consumer = kafka.consumer({ groupId: 'analytics-group' });
 
 export async function sendUserEvent(eventType: 'user.registered' | 'user.logged_in', payload: any) {
+  await producer.connect();
+
   await producer.send({
     topic: 'user-events',
     messages: [
@@ -22,6 +24,7 @@ export async function sendUserEvent(eventType: 'user.registered' | 'user.logged_
 export async function startUserEventConsumer() {
   await consumer.connect();
   await consumer.subscribe({ topic: 'user-events', fromBeginning: false });
+
   await consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;

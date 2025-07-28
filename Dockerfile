@@ -24,4 +24,4 @@ COPY wait-for-it.sh ./
 RUN chmod +x wait-for-it.sh
 
 # Start the application
-CMD ["./wait-for-it.sh", "kafka:9092", "--", "node", "dist/app.js"] 
+CMD ["npm", "run", "dev"] 
